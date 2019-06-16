@@ -53,6 +53,12 @@ class CALayerChangeShadowRadiusEvent extends CALayerEvent {
   CALayerChangeShadowRadiusEvent(this.radius);
 }
 
+class CALayerChangeBorderWidthEvent extends CALayerEvent {
+  double width;
+
+  CALayerChangeBorderWidthEvent(this.width);
+}
+
 /// user change shadow color
 class CALayerChangeShadowColorEvent extends CALayerEvent {
   Color color;

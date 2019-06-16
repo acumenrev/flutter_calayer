@@ -10,6 +10,8 @@ class CALayerState {
   Color backgroundColor;
   Color shadowColor;
   Point shadowOffset;
+  double opacity;
+
   static const Point _defaultPoint = Point(0.0, 0.0);
 
   CALayerState(
@@ -18,7 +20,8 @@ class CALayerState {
       this.borderColor = Colors.grey,
       this.backgroundColor = Colors.green,
       this.shadowColor = Colors.blue,
-      this.shadowOffset = _defaultPoint});
+      this.shadowOffset = _defaultPoint,
+      this.opacity = 1.0});
 
   CALayerState.init() {
     this.contentAlignment = Alignment.center;
@@ -27,6 +30,7 @@ class CALayerState {
     this.backgroundColor = Colors.green;
     this.shadowColor = Colors.blue;
     this.shadowOffset = _defaultPoint;
+    this.opacity = 1.0;
   }
 
   CALayerState copyWith(
@@ -35,13 +39,15 @@ class CALayerState {
       Color borderColor,
       Color backgroundColor,
       Color shadowColor,
-      Point shadowOffset}) {
+      Point shadowOffset,
+      double opacity}) {
     return CALayerState(
         contentAlignment: contentAlign ?? this.contentAlignment,
         borderWidth: borderWidth ?? this.borderWidth,
         borderColor: borderColor ?? this.borderColor,
         backgroundColor: backgroundColor ?? this.backgroundColor,
         shadowColor: shadowColor ?? this.shadowColor,
-        shadowOffset: shadowOffset ?? this.shadowOffset);
+        shadowOffset: shadowOffset ?? this.shadowOffset,
+        opacity: opacity ?? this.opacity);
   }
 }

@@ -2,8 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_calayer/calayer_event.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'calayer_bloc.dart';
 import 'calayer_state.dart';
+import 'package:sprintf/sprintf.dart';
 
 class CALayerPlayer extends StatefulWidget {
   @override
@@ -49,15 +52,85 @@ class _CALayerPlayerState extends State<CALayerPlayer> {
     );
   }
 
+  /// Show Color Picker
+  _showColorPicker(
+      String title, Color currentValue, ValueChanged<Color> callback) {
+    /*
+         MaterialColorPicker(
+                onColorChange: callback,
+                selectedColor: currentValue,
+              )
+          */
+    showDialog(
+        context: this.context,
+        builder: (BuildContext ctx) {
+          return AlertDialog(
+            title: Text(title),
+            content: SingleChildScrollView(
+              child: ColorPicker(
+                onColorChanged: callback,
+                pickerColor: currentValue,
+                colorPickerWidth: 300.0,
+              ),
+            ),
+          );
+        });
+  }
+
   /// Build Property list
   _buildPropertiesList(BuildContext ctx, CALayerState state) {
     return Expanded(
       child: ListView(
         children: <Widget>[
-          _buildPickerItem('Hello World', 'Right Value', () {}),
-          _buildToggleItem('toggle', true, (value) {}),
-          _buildSlidersItem('Slider'),
-          _buildColorItem('Color Picker', Colors.green, () {})
+          // Content Alignment
+          _buildPickerItem(
+              "Content Alignment", state.contentAlignment.toString(), () {}),
+
+          // Opacity
+          _buildSliderItem("Opacity", state.opacity, 0.0, 1.0, (value) {
+            CALayerChangeOpacityEvent event = CALayerChangeOpacityEvent(value);
+            blocCALayer.dispatch(event);
+          }),
+
+          // Border Width
+          _buildSliderItem("Border Width", state.borderWidth, 0.0, 100.0,
+              (value) {
+            CALayerChangeBorderWidthEvent event =
+                CALayerChangeBorderWidthEvent(value);
+            blocCALayer.dispatch(event);
+          }),
+
+          // Border Color
+          _buildColorItem("Border Color", state.borderColor, () {
+            this._showColorPicker("Border Color", state.borderColor, (value) {
+              CALayerChangeBorderColorEvent event =
+                  CALayerChangeBorderColorEvent(value);
+              blocCALayer.dispatch(event);
+            });
+          }),
+
+          // Background color
+
+          _buildColorItem("Background Color", state.backgroundColor, () {
+            this._showColorPicker("Background Color", state.backgroundColor,
+                (value) {
+              CALayerChangeBackgroundColorEvent event =
+                  CALayerChangeBackgroundColorEvent(value);
+              blocCALayer.dispatch(event);
+            });
+          }),
+
+          // Shadow color
+
+          _buildColorItem("Shadow Color", state.shadowColor, () {
+            this._showColorPicker("Shadow Color", state.shadowColor, (value) {
+              CALayerChangeShadowColorEvent event =
+                  CALayerChangeShadowColorEvent(value);
+              blocCALayer.dispatch(event);
+            });
+          }),
+
+          // shadow offset
         ],
       ),
     );
@@ -144,7 +217,12 @@ class _CALayerPlayerState extends State<CALayerPlayer> {
   }
 
   /// Build Slider Item
-  _buildSlidersItem(String title) {
+  _buildSliderItem(String title, double value, double min, double max,
+      ValueChanged<double> callback) {
+    String stringValue = sprintf('%2.0f', [value]);
+    if (max == 1.0) {
+      stringValue = sprintf('%2.0f', [value * 100]);
+    }
     return Container(
       height: 50.0,
       child: Column(
@@ -158,28 +236,25 @@ class _CALayerPlayerState extends State<CALayerPlayer> {
                     title,
                     style: TextStyle(color: Colors.black, fontSize: 14),
                   ),
-                  SizedBox(
-                    width: 10.0,
-                  ),
                   Expanded(
-                    child: Row(
-                      children: <Widget>[
-                        Text(
-                          'Description',
-                          style: TextStyle(color: Colors.black, fontSize: 10),
-                        ),
-                        SizedBox(
-                          width: 5.0,
-                        ),
-                        CupertinoSlider(
-                          onChanged: (double value) {},
-                          value: 0.5,
-                        ),
-                        SizedBox(
-                          width: 5.0,
-                        )
-                      ],
-                    ),
+                    child: Container(),
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Text(
+                        stringValue,
+                        style: TextStyle(color: Colors.black, fontSize: 10),
+                      ),
+                      SizedBox(
+                        width: 5.0,
+                      ),
+                      CupertinoSlider(
+                        onChanged: callback,
+                        value: value,
+                        min: min,
+                        max: max,
+                      )
+                    ],
                   )
                 ],
               ),
@@ -270,7 +345,8 @@ class _CALayerPlayerState extends State<CALayerPlayer> {
             decoration: BoxDecoration(
                 border: Border.all(
                     width: state.borderWidth, color: state.borderColor),
-                color: state.backgroundColor,
+                color: state.backgroundColor
+                    .withAlpha((state.opacity * 100).toInt()),
                 borderRadius: BorderRadius.circular(radius / 2),
                 boxShadow: [
                   BoxShadow(
